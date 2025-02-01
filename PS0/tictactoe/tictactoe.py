@@ -31,10 +31,13 @@ def player(board):
 
 
 def actions(board):
-    """
-    Returns set of all possible actions (i, j) available on the board.
-    """
-    raise NotImplementedError
+    actions_set = set()
+    i = 0
+    while i <= 2:
+        j = 0
+        while j <= 2:
+            if board[i][j]:
+                actions_set.add((i, j))
 
 
 def result(board, action):
