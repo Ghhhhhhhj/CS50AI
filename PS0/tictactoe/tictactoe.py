@@ -33,12 +33,11 @@ def player(board):
 
 def actions(board):
     actions_set = set()
-    i = 0
-    while i <= 2:
-        j = 0
-        while j <= 2:
-            if board[i][j]:
+    for i in range(3):
+        for j in range(3):
+            if not board[i][j]:
                 actions_set.add((i, j))
+    return actions_set
 
 
 def result(board, action):
@@ -97,4 +96,31 @@ def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    raise NotImplementedError
+
+    if terminal(board):
+        return None
+    if player(board) == X:
+        best_value = float('-inf')
+        best_move = None
+        for action in actions(board):
+            move_value = minimax_value(result(board, action))
+            if move_value > best_value:
+                best_value = move_value
+                best_move = action
+    if player(board) == O:
+        best_value = float('inf')
+        best_move = None
+        for action in actions(board):
+            move_value = minimax_value(result(board, action))
+            if move_value < best_value:
+                best_value = move_value
+                best_move = action
+    return best_move
+
+def minimax_value(board):
+    if terminal(board):
+        return utility(board)
+    if player(board) == X:
+        return max(minimax_value(result(board, action)) for action in actions(board))
+    if player(board) == O:
+        return min(minimax_value(result(board, action)) for action in actions(board))
