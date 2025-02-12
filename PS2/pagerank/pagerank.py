@@ -57,7 +57,26 @@ def transition_model(corpus, page, damping_factor):
     linked to by `page`. With probability `1 - damping_factor`, choose
     a link at random chosen from all pages in the corpus.
     """
-    raise NotImplementedError
+    model = dict()
+    linked_count = len(corpus[page])
+    pages_linked = corpus[page]
+    pages_all = corpus.keys()
+    page_count = len(corpus)
+
+    if pages_linked:
+        for pg in pages_linked:
+            model.update({pg: damping_factor / linked_count})
+    else:
+        for pg in pages_all:
+            model.update({pg: 1 / page_count})
+        return model
+    if pages_all:
+        for pg in pages_all:
+            if pg in model:
+                model[pg] += (1 - damping_factor) / page_count
+            else:
+                model.update({pg: (1 - damping_factor) / page_count})
+    return model
 
 
 def sample_pagerank(corpus, damping_factor, n):
@@ -69,7 +88,21 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    page = random.choice(list(corpus.keys()))
+    chosen_pages = {page: 1}
+    for _ in range(n - 1):
+        model = transition_model(corpus, page, damping_factor)
+        page = random.choices(list(model.keys()), list(model.values()))[0]
+        if page in chosen_pages.keys():
+            chosen_pages[page] += 1
+        else:
+            chosen_pages.update({page: 1})
+    pageranks = dict()
+    for page in chosen_pages.keys():
+        pageranks.update({page: chosen_pages[page] / n})
+    return pageranks
+
+
 
 
 def iterate_pagerank(corpus, damping_factor):
@@ -81,7 +114,38 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    pageranks = dict()
+    max_delta = 0.001
+    delta = 1
+    page_count = len(corpus)
+
+    for page in corpus.keys():
+        pageranks.update({page: 1 / page_count})
+
+    while(delta > max_delta):
+
+        delta = 0
+        new_pageranks = pageranks.copy()
+
+        for page in corpus.keys():
+            pr_sum = 0
+
+            for pg in corpus.keys():
+                if corpus[pg]:
+                    if page in corpus[pg]:
+                        pr_sum += pageranks[pg] / len(corpus[pg])
+                else:
+                    pr_sum += pageranks[pg] / page_count
+
+            rank = (1 - damping_factor) / page_count + damping_factor * pr_sum
+            new_pageranks[page] = rank
+            delta = max(delta, abs(rank - pageranks[page])) 
+
+        pageranks = new_pageranks
+
+    return pageranks
+
+
 
 
 if __name__ == "__main__":
