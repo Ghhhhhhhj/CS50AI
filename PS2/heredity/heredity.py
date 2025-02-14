@@ -156,7 +156,7 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         else:
             def parent_probability(parent):
                 if parent in one_gene:
-                    return 0.5 - PROBS["mutation"]
+                    return 0.5
                 elif parent in two_genes:
                     return 1 - PROBS ["mutation"]
                 else:
@@ -188,7 +188,17 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
     Which value for each distribution is updated depends on whether
     the person is in `have_gene` and `have_trait`, respectively.
     """
-    raise NotImplementedError
+    for person in probabilities:
+        if person in two_genes:
+            probabilities[person]["gene"][2] += p
+        elif person in one_gene:
+            probabilities[person]["gene"][1] += p
+        else:
+            probabilities[person]["gene"][0] += p
+        if person in have_trait:
+            probabilities[person]["trait"][True] += p
+        else:
+            probabilities[person]["trait"][False] += p
 
 
 def normalize(probabilities):
@@ -196,7 +206,18 @@ def normalize(probabilities):
     Update `probabilities` such that each probability distribution
     is normalized (i.e., sums to 1, with relative proportions the same).
     """
-    raise NotImplementedError
+    for person in probabilities:
+        sum_gene = probabilities[person]["gene"][0] + probabilities[person]["gene"][1] + probabilities[person]["gene"][2]
+        sum_trait = probabilities[person]["trait"][True] + probabilities[person]["trait"][False]
+
+        if sum_gene > 0:
+            probabilities[person]["gene"][0] /= sum_gene
+            probabilities[person]["gene"][1] /= sum_gene
+            probabilities[person]["gene"][2] /= sum_gene
+
+        if sum_trait > 0:
+            probabilities[person]["trait"][True] /= sum_trait
+            probabilities[person]["trait"][False] /= sum_trait
 
 
 if __name__ == "__main__":
